@@ -7,22 +7,21 @@ FastF1 세션 데이터 로딩을 담당하는 모듈
 캐싱을 관리하는 기능을 제공합니다.
 """
 
-import fastf1
 from pathlib import Path
-from typing import Optional
 
+import fastf1
 
 # 캐시 디렉토리 (프로젝트 루트의 f1_cache)
-DEFAULT_CACHE_DIR = Path(__file__).parent.parent.parent / 'f1_cache'
+DEFAULT_CACHE_DIR = Path(__file__).parent.parent.parent / "f1_cache"
 
 
-def setup_cache(cache_dir: Optional[Path] = None) -> Path:
+def setup_cache(cache_dir: Path | None = None) -> Path:
     """
     FastF1 캐시 디렉토리를 설정한다.
-    
+
     Args:
         cache_dir: 캐시 디렉토리 경로. None이면 기본값 사용.
-    
+
     Returns:
         설정된 캐시 디렉토리 경로
     """
@@ -33,14 +32,11 @@ def setup_cache(cache_dir: Optional[Path] = None) -> Path:
 
 
 def load_session(
-    year: int,
-    gp: str,
-    session_type: str = 'R',
-    verbose: bool = True
+    year: int, gp: str, session_type: str = "R", verbose: bool = True
 ) -> fastf1.core.Session:
     """
     F1 세션 데이터를 로드한다.
-    
+
     Args:
         year: 시즌 연도 (예: 2024)
         gp: 그랑프리 이름 (예: 'Monaco', 'Spain')
@@ -50,23 +46,23 @@ def load_session(
             - 'R': 본 경기 (Race)
             - 'S': 스프린트 (Sprint)
         verbose: 진행 상황 출력 여부
-    
+
     Returns:
         로드된 FastF1 Session 객체
-    
+
     Example:
         >>> session = load_session(2024, 'Monaco', 'R')
         >>> print(session.event['EventName'])
     """
     if verbose:
         print(f"📥 {year} {gp} GP ({session_type}) 로드 중...")
-    
+
     session = fastf1.get_session(year, gp, session_type)
     session.load()
-    
+
     if verbose:
         print(f"✓ 로드 완료: {session.event['EventName']}")
-    
+
     return session
 
 
