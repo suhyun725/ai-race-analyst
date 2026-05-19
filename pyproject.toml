@@ -1,0 +1,84 @@
+# =============================================================
+# pyproject.toml
+# =============================================================
+# Python 프로젝트 메타데이터 및 도구 설정
+# Black, Ruff, pytest 설정이 모두 여기에 들어있습니다.
+# =============================================================
+
+[project]
+name = "ai-race-analyst"
+version = "0.1.0"
+description = "LLM과 정량 시뮬레이션을 결합한 F1 포스트 레이스 분석 시스템"
+requires-python = ">=3.11"
+authors = [
+    { name = "Suhyun Ko" }
+]
+license = { text = "MIT" }
+
+# =============================================================
+# Black: 코드 포매터
+# =============================================================
+[tool.black]
+line-length = 88
+target-version = ['py311', 'py312', 'py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    venv
+  | f1_cache
+  | \.git
+  | build
+  | dist
+)/
+'''
+
+# =============================================================
+# Ruff: 린터
+# =============================================================
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+extend-exclude = [
+    "venv",
+    "f1_cache",
+    ".git",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+# 활성화할 규칙들
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (사용하지 않는 import 등)
+    "I",   # isort (import 순서)
+    "B",   # flake8-bugbear (버그 가능성)
+    "UP",  # pyupgrade (구식 문법)
+    "N",   # pep8-naming (네이밍 규칙)
+]
+
+# 무시할 규칙
+ignore = [
+    "E501",  # 라인 길이 (Black이 처리)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # __init__.py에서 사용 안 하는 import OK
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]  # 우리 프로젝트 코드는 first-party로 분류
+
+# =============================================================
+# pytest: 테스트 설정
+# =============================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",                    # 상세 출력
+    "--tb=short",            # 트레이스백 짧게
+    "--strict-markers",      # 정의되지 않은 마커 에러
+]
