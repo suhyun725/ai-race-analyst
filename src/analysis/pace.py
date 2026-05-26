@@ -144,6 +144,228 @@ def plot_pace_evolution(
     plt.close(fig)
 
 
+def plot_pace_evolution_styled(
+    laps: pd.DataFrame,
+    drivers: list[str],
+    save_path: str | None = None,
+    title: str | None = None,
+    sc_laps: list[tuple[int, int]] | None = None,
+    vsc_laps: list[tuple[int, int]] | None = None,
+) -> None:
+    """
+    전체 드라이버 랩타임 추이를 다크 모드로 시각화한다.
+
+    plot_pace_evolution의 스타일 강화 버전.
+    SC/VSC 구간 음영, 드라이버 이름 인라인 레이블(영어)을 추가로 제공한다.
+
+    Args:
+        laps: long-format 페이스 DataFrame (compare_drivers_pace 반환값)
+        drivers: 표시할 드라이버 목록
+        save_path: 저장 경로. None이면 화면 출력.
+        title: 그래프 제목. None이면 기본값 사용.
+        sc_laps: Safety Car 구간 목록. 예: [(12, 15), (30, 32)]
+        vsc_laps: Virtual SC 구간 목록. 예: [(20, 22)]
+
+    Example:
+        >>> plot_pace_evolution_styled(
+        ...     pace_df, ['VER', 'NOR'], sc_laps=[(12, 15)], save_path='out.png'
+        ... )
+    """
+    with plt.style.context("dark_background"):
+        fig, ax = plt.subplots(figsize=(16, 8), dpi=150)
+
+        # SC 구간 음영 (중복 레전드 방지)
+        sc_labeled = False
+        for start, end in sc_laps or []:
+            ax.axvspan(
+                start,
+                end,
+                alpha=0.20,
+                color="#FFD700",
+                label="Safety Car" if not sc_labeled else "_nolegend_",
+                zorder=0,
+            )
+            sc_labeled = True
+
+        # VSC 구간 음영
+        vsc_labeled = False
+        for start, end in vsc_laps or []:
+            ax.axvspan(
+                start,
+                end,
+                alpha=0.20,
+                color="#00BFFF",
+                label="Virtual SC" if not vsc_labeled else "_nolegend_",
+                zorder=0,
+            )
+            vsc_labeled = True
+
+        for driver in drivers:
+            driver_laps = laps[laps["Driver"] == driver].sort_values("LapNumber")
+            if driver_laps.empty:
+                continue
+            color = TEAM_COLORS.get(driver, "#888888")
+            ax.plot(
+                driver_laps["LapNumber"],
+                driver_laps["LapTimeSeconds"],
+                color=color,
+                linewidth=1.8,
+                marker="o",
+                markersize=3,
+                alpha=0.9,
+                zorder=2,
+            )
+            # 마지막 랩 옆에 드라이버 이름 레이블 (영어)
+            last = driver_laps.iloc[-1]
+            ax.text(
+                last["LapNumber"] + 0.5,
+                last["LapTimeSeconds"],
+                driver,
+                color=color,
+                fontsize=9,
+                fontweight="bold",
+                va="center",
+                zorder=3,
+            )
+
+        ax.set_xlabel("Lap Number", fontsize=12)
+        ax.set_ylabel("Lap Time (seconds)", fontsize=12)
+        ax.set_title(title or "Pace Evolution", fontsize=14, fontweight="bold")
+        ax.grid(True, alpha=0.3, linestyle="--")
+
+        # SC/VSC 음영이 있을 때만 레전드 표시
+        handles, labels = ax.get_legend_handles_labels()
+        if handles:
+            ax.legend(handles, labels, loc="upper right", fontsize=10)
+
+        fig.tight_layout()
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight")
+            print(f"Saved: {save_path}")
+        else:
+            plt.show()
+
+        plt.close(fig)
+
+
+def plot_race_pace_overview(
+    laps: pd.DataFrame,
+    drivers: list[str],
+    save_path: str | None = None,
+    title: str | None = None,
+    sc_laps: list[tuple[int, int]] | None = None,
+    vsc_laps: list[tuple[int, int]] | None = None,
+) -> None:
+    """
+    전체 드라이버의 랩별 페이스 추이를 다크 모드로 시각화한다.
+
+    피트랩·SC랩 등 이상치(드라이버별 평균 + 3σ 초과)를 제거하고 메인 페이스
+    범위에 y축을 자동 설정한다. SC/VSC 구간 음영, 라인 끝 인라인 레이블 포함.
+
+    Args:
+        laps: Driver, LapNumber, LapTimeSeconds 컬럼이 있는 DataFrame
+        drivers: 표시할 드라이버 약자 리스트
+        save_path: 저장 경로. None이면 화면 출력.
+        title: 그래프 제목. None이면 기본값 사용.
+        sc_laps: Safety Car 구간 목록. 예: [(12, 15), (30, 32)]
+        vsc_laps: Virtual SC 구간 목록. 예: [(20, 22)]
+
+    Example:
+        >>> plot_race_pace_overview(
+        ...     laps, ['VER', 'NOR', 'PIA'], sc_laps=[(12, 15)], save_path='out.png'
+        ... )
+    """
+    with plt.style.context("dark_background"):
+        fig, ax = plt.subplots(figsize=(16, 8), dpi=150)
+
+        sc_labeled = False
+        for start, end in sc_laps or []:
+            ax.axvspan(
+                start,
+                end,
+                alpha=0.20,
+                color="#FFD700",
+                label="Safety Car" if not sc_labeled else "_nolegend_",
+                zorder=0,
+            )
+            sc_labeled = True
+
+        vsc_labeled = False
+        for start, end in vsc_laps or []:
+            ax.axvspan(
+                start,
+                end,
+                alpha=0.20,
+                color="#00BFFF",
+                label="Virtual SC" if not vsc_labeled else "_nolegend_",
+                zorder=0,
+            )
+            vsc_labeled = True
+
+        all_valid_times: list[float] = []
+
+        for driver in drivers:
+            driver_laps = laps[laps["Driver"] == driver].sort_values("LapNumber")
+            if driver_laps.empty:
+                continue
+            times = driver_laps["LapTimeSeconds"].dropna()
+            if times.empty:
+                continue
+            # 드라이버별 이상치 제거 (평균 + 3σ 초과 — 피트랩·SC랩 등)
+            cutoff = times.mean() + 3 * times.std()
+            filtered = driver_laps[driver_laps["LapTimeSeconds"] <= cutoff].copy()
+            if filtered.empty:
+                continue
+
+            color = TEAM_COLORS.get(driver, "#888888")
+            ax.plot(
+                filtered["LapNumber"],
+                filtered["LapTimeSeconds"],
+                color=color,
+                linewidth=1.8,
+                marker="o",
+                markersize=3,
+                alpha=0.9,
+                zorder=2,
+            )
+            last = filtered.iloc[-1]
+            ax.text(
+                last["LapNumber"] + 0.5,
+                last["LapTimeSeconds"],
+                driver,
+                color=color,
+                fontsize=9,
+                fontweight="bold",
+                va="center",
+                zorder=3,
+            )
+            all_valid_times.extend(filtered["LapTimeSeconds"].tolist())
+
+        # y축: 이상치 제거 후 데이터 범위에 맞게 자동 설정
+        if all_valid_times:
+            ax.set_ylim(min(all_valid_times) - 1.0, max(all_valid_times) + 1.0)
+
+        ax.set_xlabel("Lap Number", fontsize=12)
+        ax.set_ylabel("Pace (s)", fontsize=12)
+        ax.set_title(title or "Race Pace Overview", fontsize=14, fontweight="bold")
+        ax.grid(True, alpha=0.3, linestyle="--")
+
+        handles, labels = ax.get_legend_handles_labels()
+        if handles:
+            ax.legend(handles, labels, loc="upper right", fontsize=10)
+
+        fig.tight_layout()
+
+        if save_path:
+            fig.savefig(save_path, bbox_inches="tight")
+            print(f"Saved: {save_path}")
+        else:
+            plt.show()
+
+        plt.close(fig)
+
+
 def plot_pace_delta(
     delta_df: pd.DataFrame,
     save_path: str | None = None,
