@@ -39,7 +39,8 @@ ai-race-analyst/
 │   └── analysis/
 │       ├── pace.py                ✅
 │       ├── position.py            ✅
-│       └── degradation.py         ✅
+│       │   └── degradation.py         ✅
+    │   └── sector.py              ✅
 │
 ├── step1_fetch_data.py            # 데이터 수집
 ├── step2_explore_data.py          # 데이터 탐색
@@ -146,7 +147,7 @@ git push -u origin feature/<기능명>
 ### ✅ Phase 2: 분석 모듈 (2/3 완료)
 - **페이스 분석** (PR #3): Brazil 2024
 - **타이어 디그라데이션** (현재 PR): Bahrain 2025, 연료 보정 0.03s/lap
-- **섹터 분석** (다음 작업) ⬅️
+- **섹터 분석** (PR #6): Bahrain 2025, 전체 드라이버 섹터 베스트/얼티밋랩/스피드트랩 ✅
 
 ### 🎯 Phase 3: 시뮬레이션 엔진
 - 랩타임 모델 (TUM Heilmeier 2020 기반)
