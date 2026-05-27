@@ -10,27 +10,43 @@ pace.py
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# F1 팀 컬러 (2024 시즌)
+# F1 팀 컬러 (2025 시즌 기준)
 TEAM_COLORS = {
-    "VER": "#3671C6",  # Red Bull
-    "PER": "#3671C6",
-    "NOR": "#FF8000",  # McLaren
+    # Red Bull
+    "VER": "#3671C6",
+    "LAW": "#3671C6",
+    # McLaren
+    "NOR": "#FF8000",
     "PIA": "#FF8000",
-    "LEC": "#E80020",  # Ferrari
-    "SAI": "#E80020",
-    "HAM": "#27F4D2",  # Mercedes
+    # Ferrari  (HAM 이적)
+    "LEC": "#E80020",
+    "HAM": "#E80020",
+    # Mercedes  (ANT 승격)
     "RUS": "#27F4D2",
-    "OCO": "#0093CC",  # Alpine
-    "GAS": "#FF87BC",  # Alpine (핑크로 구분)
-    "STR": "#229971",  # Aston Martin
+    "ANT": "#27F4D2",
+    # Aston Martin
     "ALO": "#229971",
-    "TSU": "#6692FF",  # RB
-    "LAW": "#6692FF",
-    "BOT": "#52E252",  # Sauber
+    "STR": "#229971",
+    # Alpine
+    "GAS": "#FF87BC",
+    "DOO": "#FF87BC",
+    # RB
+    "TSU": "#6692FF",
+    "HAD": "#6692FF",
+    # Haas  (OCO·BEA)
+    "OCO": "#B6BABD",
+    "BEA": "#B6BABD",
+    # Williams  (SAI 이적)
+    "ALB": "#64C4FF",
+    "SAI": "#64C4FF",
+    # Sauber/Audi  (HUL 이적)
+    "HUL": "#52E252",
+    "BOR": "#52E252",
+    # 2024 이전 드라이버 (pace 분석 하위 호환)
+    "PER": "#3671C6",
     "ZHO": "#52E252",
-    "MAG": "#B6BABD",  # Haas
-    "HUL": "#B6BABD",
-    "ALB": "#64C4FF",  # Williams
+    "BOT": "#52E252",
+    "MAG": "#B6BABD",
     "COL": "#64C4FF",
     "SAR": "#64C4FF",
 }
